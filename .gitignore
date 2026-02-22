@@ -1,0 +1,60 @@
+# ===========================
+# Environment & Secrets
+# ===========================
+.env
+.env.*
+!.env.example
+
+# ===========================
+# Python
+# ===========================
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.egg
+*.egg-info/
+dist/
+build/
+.Python
+venv/
+env/
+.venv/
+*.log
+
+# ===========================
+# Node / Frontend
+# ===========================
+node_modules/
+dist/
+.cache/
+.parcel-cache/
+*.local
+
+# ===========================
+# Database & Uploads
+# ===========================
+*.db
+*.sqlite
+*.sqlite3
+uploads/
+indices/
+
+# ===========================
+# IDE & OS
+# ===========================
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+.DS_Store
+Thumbs.db
+
+# ===========================
+# Misc
+# ===========================
+*.bak
+*.swp
+*.tmp
