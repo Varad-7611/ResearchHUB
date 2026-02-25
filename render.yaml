@@ -1,0 +1,46 @@
+services:
+  # =========================
+  # BACKEND – FastAPI
+  # =========================
+  - type: web
+    name: researchhub-backend
+    runtime: python
+    region: oregon
+    plan: free
+    branch: main
+    rootDir: backend
+
+    buildCommand: |
+      pip install --upgrade pip
+      pip install -r requirements.txt
+
+    startCommand: |
+      uvicorn main:app --host 0.0.0.0 --port $PORT
+
+    envVars:
+      - key: DATABASE_URL
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: EMAIL_PASSWORD
+        sync: false
+
+  # =========================
+  # FRONTEND – VITE + REACT
+  # =========================
+  - type: static
+    name: researchhub-frontend
+    branch: main
+    rootDir: frontend
+
+    buildCommand: |
+      npm install
+      npm run build
+
+    staticPublishPath: dist
+
+    envVars:
+      - key: VITE_API_URL
+        value: https://researchhub-backend.onrender.com
