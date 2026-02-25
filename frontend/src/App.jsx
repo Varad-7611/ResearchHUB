@@ -19,8 +19,8 @@ const ProtectedRoute = ({ children }) => {
   return (
     <div className="flex bg-background min-h-screen text-white">
       <Sidebar />
-      <main className="flex-1 h-screen overflow-y-auto p-8 relative">
-        <div className="max-w-7xl mx-auto h-full">
+      <main className="flex-1 h-screen overflow-y-auto p-4 md:p-8 relative">
+        <div className="max-w-[1600px] mx-auto h-full w-full">
           {children}
         </div>
       </main>

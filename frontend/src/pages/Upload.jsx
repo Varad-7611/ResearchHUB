@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Upload as UploadIcon, FileText, CheckCircle, X, Loader2, AlertCircle } from 'lucide-react';
+import { Upload as UploadIcon, FileText, CheckCircle, X, Loader2, AlertCircle, Trash2 } from 'lucide-react';
 import api from '../api';
 import toast from 'react-hot-toast';
 
@@ -23,6 +23,19 @@ const Upload = () => {
         fetchDocuments();
     }, []);
 
+    const handleDeleteDocument = async (id) => {
+        if (!confirm('Are you sure you want to delete this document? This will also remove it from your AI knowledge base.')) return;
+
+        const toastId = toast.loading('Removing document...');
+        try {
+            await api.delete(`/documents/${id}`);
+            setDocuments(prev => prev.filter(doc => doc.id !== id));
+            toast.success('Document deleted', { id: toastId });
+        } catch (error) {
+            toast.error('Failed to delete document', { id: toastId });
+        }
+    };
+
     const onDragOver = useCallback((e) => {
         e.preventDefault();
         setIsDragging(true);
@@ -40,13 +53,18 @@ const Upload = () => {
     }, []);
 
     const handleFiles = (newFiles) => {
-        const validFiles = newFiles.filter(file =>
-            ['application/pdf', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'text/plain']
-                .includes(file.type) || file.name.endsWith('.docx')
-        );
+        const MAX_SIZE = 200 * 1024 * 1024; // 200MB
+        const validFiles = newFiles.filter(file => {
+            const isTypeValid = ['application/pdf', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'text/plain']
+                .includes(file.type) || file.name.endsWith('.docx') || file.name.endsWith('.pdf') || file.name.endsWith('.txt');
+            const isSizeValid = file.size <= MAX_SIZE;
 
-        if (validFiles.length !== newFiles.length) {
-            toast.error('Only PDF, DOCX, and TXT files are supported');
+            if (!isSizeValid) toast.error(`${file.name} is too large (max 200MB)`);
+            return isTypeValid && isSizeValid;
+        });
+
+        if (validFiles.length === 0 && newFiles.length > 0) {
+            toast.error('No valid files selected (PDF, DOCX, TXT only)');
         }
 
         setFiles(prev => [...prev, ...validFiles]);
@@ -100,7 +118,7 @@ const Upload = () => {
                             <UploadIcon size={40} />
                         </div>
                         <h3 className="text-2xl font-bold mb-2">Drag & drop files here</h3>
-                        <p className="text-secondary mb-8">Support for PDF, DOCX, and TXT (Max 20MB per file)</p>
+                        <p className="text-secondary mb-8">Support for PDF, DOCX, and TXT (Max 200MB per file)</p>
 
                         <input
                             type="file"
@@ -173,8 +191,8 @@ const Upload = () => {
                                 </div>
                             ) : (
                                 documents.map((doc) => (
-                                    <div key={doc.id} className="p-4 bg-white/5 rounded-xl border border-white/5 hover:border-primary/20 transition-all group">
-                                        <div className="flex items-start gap-3">
+                                    <div className="flex items-center justify-between p-4 bg-white/5 rounded-xl border border-white/5 hover:border-primary/20 transition-all group">
+                                        <div className="flex items-start gap-3 overflow-hidden">
                                             <div className="w-10 h-10 bg-primary/10 text-primary rounded-lg flex items-center justify-center flex-shrink-0 group-hover:bg-primary group-hover:text-white transition-all">
                                                 <FileText size={20} />
                                             </div>
@@ -185,6 +203,13 @@ const Upload = () => {
                                                 </p>
                                             </div>
                                         </div>
+                                        <button
+                                            onClick={() => handleDeleteDocument(doc.id)}
+                                            className="p-2 text-secondary hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all"
+                                            title="Delete Document"
+                                        >
+                                            <Trash2 size={16} />
+                                        </button>
                                     </div>
                                 ))
                             )}

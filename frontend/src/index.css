@@ -124,6 +124,63 @@
     background-size: 200% auto;
     animation: gradient 5s linear infinite;
   }
+
+  /* Markdown styles for Chat */
+  .prose {
+    --tw-prose-body: #e2e8f0;
+    --tw-prose-headings: #ffffff;
+    --tw-prose-links: #3b82f6;
+    --tw-prose-bold: #ffffff;
+    --tw-prose-bullets: #3b82f6;
+    --tw-prose-hr: rgba(255, 255, 255, 0.1);
+    --tw-prose-quotes: #94a3b8;
+    --tw-prose-quote-borders: #3b82f6;
+    --tw-prose-captions: #64748b;
+    --tw-prose-code: #ffffff;
+    --tw-prose-pre-code: #e2e8f0;
+    --tw-prose-pre-bg: #151518;
+    --tw-prose-th-borders: #334155;
+    --tw-prose-td-borders: #1e293b;
+  }
+
+  .prose p {
+    @apply mb-3 last:mb-0;
+  }
+
+  .prose ul,
+  .prose ol {
+    @apply mb-3 ml-4;
+  }
+
+  .prose code {
+    @apply bg-white/10 px-1.5 py-0.5 rounded text-blue-400 font-normal;
+  }
+
+  .prose pre {
+    @apply !bg-transparent !p-0 !m-0;
+  }
+
+  .prose pre code {
+    @apply bg-transparent p-0 rounded-none text-inherit;
+  }
+
+  .prose a {
+    @apply text-blue-400 underline font-medium hover:text-blue-300 transition-colors cursor-pointer;
+  }
+
+  .animate-bounce-subtle {
+    animation: bounce-subtle 0.6s infinite alternate;
+  }
+
+  @keyframes bounce-subtle {
+    from {
+      transform: translateY(0);
+    }
+
+    to {
+      transform: translateY(-4px);
+    }
+  }
 }
 
 /* Custom scrollbar */

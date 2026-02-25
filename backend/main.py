@@ -112,11 +112,41 @@ def get_stats(user: models.User = Depends(get_current_active_user), db: Session 
     chats_count = db.query(models.Chat).filter(models.Chat.user_id == user.id).count()
     messages_count = db.query(models.Message).join(models.Chat).filter(models.Chat.user_id == user.id).count()
     
+    # Get query history for graph (last 7 days as example)
+    from sqlalchemy import func
+    import datetime
+    
+    seven_days_ago = datetime.datetime.utcnow() - datetime.timedelta(days=7)
+    
+    query_history = db.query(
+        func.date(models.Message.timestamp).label('date'),
+        func.count(models.Message.id).label('count')
+    ).join(models.Chat).filter(
+        models.Chat.user_id == user.id,
+        models.Message.sender == 'user',
+        models.Message.timestamp >= seven_days_ago
+    ).group_by(
+        func.date(models.Message.timestamp)
+    ).order_by(
+        func.date(models.Message.timestamp)
+    ).all()
+    
+    history_data = [{"date": str(h.date), "count": h.count} for h in query_history]
+    
+    # Fill in zeros for days with no activity
+    final_history = []
+    for i in range(7, -1, -1):
+        d = (datetime.datetime.utcnow() - datetime.timedelta(days=i)).date()
+        date_str = str(d)
+        count = next((h["count"] for h in history_data if h["date"] == date_str), 0)
+        final_history.append({"date": d.strftime("%b %d"), "queries": count})
+
     return {
         "user_name": user.name,
         "total_documents": docs_count,
         "total_chats": chats_count,
-        "total_messages": messages_count
+        "total_messages": messages_count,
+        "query_history": final_history
     }
 
 @app.post("/upload")
@@ -125,13 +155,24 @@ async def upload_document(
     user: models.User = Depends(get_current_active_user), 
     db: Session = Depends(get_db)
 ):
+    # Set max file size to 200MB
+    MAX_FILE_SIZE = 200 * 1024 * 1024 # 200MB
+    
+    # Read a chunk to check size (UploadFile.size is only available after read)
+    content = await file.read()
+    if len(content) > MAX_FILE_SIZE:
+        raise HTTPException(status_code=413, detail="File too large. Maximum size is 200MB.")
+    
+    # Reset file pointer after reading content
+    await file.seek(0)
+
     user_dir = os.path.join(UPLOAD_DIR, str(user.id))
     if not os.path.exists(user_dir):
         os.makedirs(user_dir)
         
     file_path = os.path.join(user_dir, file.filename)
     with open(file_path, "wb") as buffer:
-        shutil.copyfileobj(file.file, buffer)
+        buffer.write(content)
         
     db_doc = models.Document(user_id=user.id, file_name=file.filename, file_path=file_path)
     db.add(db_doc)
@@ -147,6 +188,24 @@ async def upload_document(
 @app.get("/documents", response_model=List[schemas.DocumentResponse])
 def get_documents(user: models.User = Depends(get_current_active_user), db: Session = Depends(get_db)):
     return db.query(models.Document).filter(models.Document.user_id == user.id).all()
+
+@app.delete("/documents/{doc_id}")
+def delete_document(doc_id: int, user: models.User = Depends(get_current_active_user), db: Session = Depends(get_db)):
+    doc = db.query(models.Document).filter(models.Document.id == doc_id, models.Document.user_id == user.id).first()
+    if not doc:
+        raise HTTPException(status_code=404, detail="Document not found")
+        
+    # Delete file from disk
+    if os.path.exists(doc.file_path):
+        os.remove(doc.file_path)
+        
+    # Remove from RAG index
+    rag_manager = rag.RAGManager(user.id)
+    rag_manager.delete_document(doc.file_name)
+    
+    db.delete(doc)
+    db.commit()
+    return {"message": "Document deleted successfully"}
 
 @app.post("/chats", response_model=schemas.ChatResponse)
 def create_chat(chat: schemas.ChatCreate, user: models.User = Depends(get_current_active_user), db: Session = Depends(get_db)):
@@ -166,6 +225,15 @@ def get_chat(chat_id: int, user: models.User = Depends(get_current_active_user),
     if not chat:
         raise HTTPException(status_code=404, detail="Chat not found")
     return chat
+
+@app.delete("/chats/{chat_id}")
+def delete_chat(chat_id: int, user: models.User = Depends(get_current_active_user), db: Session = Depends(get_db)):
+    chat = db.query(models.Chat).filter(models.Chat.id == chat_id, models.Chat.user_id == user.id).first()
+    if not chat:
+        raise HTTPException(status_code=404, detail="Chat not found")
+    db.delete(chat)
+    db.commit()
+    return {"message": "Chat deleted successfully"}
 
 from fastapi.responses import StreamingResponse
 
@@ -189,23 +257,36 @@ async def chat_query(
     history = []
     messages = db.query(models.Message).filter(models.Message.chat_id == chat_id).order_by(models.Message.timestamp.asc()).all()
     for m in messages[:-1]: # exclude the current query
-        history.append({"role": m.sender, "content": m.content})
+        role = "assistant" if m.sender == "bot" else "user"
+        history.append({"role": role, "content": m.content})
         
     rag_manager = rag.RAGManager(user.id)
     stream = rag_manager.generate_response(query, history)
     
     async def event_generator():
         full_response = ""
-        for chunk in stream:
-            if chunk.choices[0].delta.content:
-                content = chunk.choices[0].delta.content
-                full_response += content
-                yield content
+        try:
+            for chunk in stream:
+                # Handle Groq stream objects
+                if hasattr(chunk, 'choices'):
+                    if chunk.choices[0].delta.content:
+                        content = chunk.choices[0].delta.content
+                        full_response += content
+                        yield content
+                # Handle error generator yielding strings
+                elif isinstance(chunk, str):
+                    full_response += chunk
+                    yield chunk
+        except Exception as e:
+            error_msg = f"\n[Stream Error: {str(e)}]"
+            full_response += error_msg
+            yield error_msg
         
         # Save bot response after stream ends
-        bot_msg = models.Message(chat_id=chat_id, sender="bot", content=full_response)
-        db.add(bot_msg)
-        db.commit()
+        if full_response:
+            bot_msg = models.Message(chat_id=chat_id, sender="bot", content=full_response)
+            db.add(bot_msg)
+            db.commit()
 
     return StreamingResponse(event_generator(), media_type="text/plain")
 

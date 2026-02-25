@@ -25,6 +25,20 @@ const History = () => {
         fetchHistory();
     }, []);
 
+    const handleDelete = async (e, id) => {
+        e.stopPropagation();
+        if (!confirm('Are you sure you want to delete this research conversation?')) return;
+
+        try {
+            await api.delete(`/chats/${id}`);
+            setChats(prev => prev.filter(chat => chat.id !== id));
+            toast.success('Conversation deleted permanently');
+        } catch (error) {
+            toast.error('Failed to delete history item');
+            console.error(error);
+        }
+    };
+
     const filteredChats = chats.filter(chat =>
         chat.chat_title.toLowerCase().includes(searchTerm.toLowerCase())
     );
@@ -95,11 +109,7 @@ const History = () => {
                                 </button>
                                 <button
                                     className="p-2 opacity-0 group-hover:opacity-100 text-secondary hover:text-red-500 transition-all"
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        // Handle delete logic here
-                                        toast.success('Chat deleted');
-                                    }}
+                                    onClick={(e) => handleDelete(e, chat.id)}
                                 >
                                     <Trash2 size={16} />
                                 </button>

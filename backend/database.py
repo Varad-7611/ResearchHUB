@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-DATABASE_URL = os.getenv("DATABASE_URL", "mysql+pymysql://root:@localhost:3306/research_hub_ai")
+DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./research_hub.db")
 
 # Remove surrounding quotes if present (common .env issue)
 DATABASE_URL = DATABASE_URL.strip('"').strip("'")
@@ -15,12 +15,18 @@ DATABASE_URL = DATABASE_URL.strip('"').strip("'")
 if DATABASE_URL.startswith("mysql://"):
     DATABASE_URL = DATABASE_URL.replace("mysql://", "mysql+pymysql://", 1)
 
-engine = create_engine(
-    DATABASE_URL,
-    pool_pre_ping=True,        # Detects broken connections
-    pool_recycle=3600,         # Recycle connections every hour
-    echo=False
-)
+# Check if it's SQLite and add specific args
+if DATABASE_URL.startswith("sqlite"):
+    engine = create_engine(
+        DATABASE_URL, connect_args={"check_same_thread": False}
+    )
+else:
+    engine = create_engine(
+        DATABASE_URL,
+        pool_pre_ping=True,        # Detects broken connections
+        pool_recycle=3600,         # Recycle connections every hour
+        echo=False
+    )
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
