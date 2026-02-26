@@ -290,6 +290,4 @@ async def chat_query(
 
     return StreamingResponse(event_generator(), media_type="text/plain")
 
-if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+
