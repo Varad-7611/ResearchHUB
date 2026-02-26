@@ -1,35 +1,37 @@
 #!/usr/bin/env bash
 set -e
 
-echo "🚀 Starting ResearchHUB AI Backend..."
+echo "🚀 Starting ResearchHUB AI Backend (Render Mode)"
 
-# Ensure we are in backend directory
+# Always run from backend directory
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+cd "$SCRIPT_DIR"
+
+# Safety check
 if [ ! -f "main.py" ]; then
-  echo "❌ main.py not found. Make sure Render root is project root."
+  echo "❌ main.py not found in backend/"
   exit 1
 fi
 
-# Load .env ONLY if present (local dev)
+# Load .env ONLY for local development
 if [ -f ".env" ]; then
-  echo "🔐 Loading environment variables from .env"
+  echo "🔐 Loading local .env"
   export $(grep -v '^#' .env | xargs)
 else
-  echo "ℹ️ .env not found. Using Render environment variables."
+  echo "ℹ️ Using Render environment variables"
 fi
 
-# Install dependencies
-echo "📦 Installing Python dependencies..."
-pip install --upgrade pip
-pip install -r requirements.txt
+# 🔑 CRITICAL FIX: guarantee PORT
+PORT="${PORT:-8000}"
+export PORT
 
-# Debug (safe check – no secrets printed)
-echo "✅ Environment loaded:"
-echo "   ➜ SMTP_HOST=${SMTP_HOST:-not_set}"
-echo "   ➜ DATABASE_URL=${DATABASE_URL:-not_set}"
-echo "   ➜ PORT=${PORT:-8000}"
+echo "🌐 Binding FastAPI to PORT=${PORT}"
 
-# Start FastAPI app
-echo "🔥 Launching FastAPI server..."
-uvicorn main:app \
+# Optional: small delay to let Render env settle
+sleep 2
+
+# Start FastAPI (Render-detected)
+exec uvicorn main:app \
   --host 0.0.0.0 \
-  --port ${PORT:-8000}
+  --port "$PORT" \
+  --log-level info
