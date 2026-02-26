@@ -20,4 +20,4 @@ pymysql
 cryptography
 duckduckgo-search
 httpx
-
+gunicorn
