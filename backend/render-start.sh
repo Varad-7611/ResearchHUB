@@ -3,20 +3,63 @@ set -e
 
 echo "🚀 Starting ResearchHUB AI Backend (Render)"
 
-# Always run from backend directory
-SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-cd "$SCRIPT_DIR"
+# Move into backend directory safely
+cd "$(dirname "$0")"
 
-# Render provides PORT (default 10000)
+# ===============================
+# LOAD ENV (LOCAL ONLY)
+# ===============================
+if [ -f ".env" ]; then
+  echo "🔐 Loading local .env file"
+  export $(grep -v '^#' .env | xargs)
+else
+  echo "ℹ️ Using Render environment variables"
+fi
+
+# ===============================
+# ENSURE DATABASE_URL EXISTS
+# ===============================
+if [ -z "$DATABASE_URL" ]; then
+  echo "❌ DATABASE_URL is not set!"
+  exit 1
+fi
+
+echo "🗄 DATABASE_URL detected"
+
+# ===============================
+# ENSURE PORT EXISTS
+# ===============================
 PORT="${PORT:-10000}"
 export PORT
 
-echo "🌐 Binding FastAPI to PORT=${PORT}"
+echo "🌐 Binding to PORT=${PORT}"
 
-# Optional: small delay to avoid early port scan race
-sleep 2
+# ===============================
+# TEST DATABASE CONNECTION
+# ===============================
+echo "🔎 Testing database connection..."
 
-# Start FastAPI (Render detects this)
+python - <<EOF
+import os
+from sqlalchemy import create_engine
+
+url = os.getenv("DATABASE_URL")
+engine = create_engine(url)
+
+try:
+    conn = engine.connect()
+    conn.close()
+    print("✅ Database connection successful")
+except Exception as e:
+    print("❌ Database connection failed:", e)
+    raise
+EOF
+
+# ===============================
+# START FASTAPI
+# ===============================
+echo "🔥 Starting Uvicorn..."
+
 exec uvicorn main:app \
   --host 0.0.0.0 \
   --port "$PORT" \
