@@ -1,65 +1,42 @@
 #!/usr/bin/env bash
 set -e
 
-echo "🚀 Starting ResearchHUB AI Backend (Render)"
+echo "🚀 Starting ResearchHUB AI Backend"
 
-# Move into backend directory safely
+# Move into backend directory
 cd "$(dirname "$0")"
 
-# ===============================
-# LOAD ENV (LOCAL ONLY)
-# ===============================
+# ==============================
+# LOAD LOCAL .env (optional)
+# ==============================
 if [ -f ".env" ]; then
-  echo "🔐 Loading local .env file"
+  echo "🔐 Loading .env file"
   export $(grep -v '^#' .env | xargs)
 else
   echo "ℹ️ Using Render environment variables"
 fi
 
-# ===============================
-# ENSURE DATABASE_URL EXISTS
-# ===============================
+# ==============================
+# CHECK DATABASE_URL
+# ==============================
 if [ -z "$DATABASE_URL" ]; then
-  echo "❌ DATABASE_URL is not set!"
+  echo "❌ DATABASE_URL not set!"
   exit 1
 fi
 
-echo "🗄 DATABASE_URL detected"
+echo "🗄 DATABASE_URL is set"
 
-# ===============================
-# ENSURE PORT EXISTS
-# ===============================
+# ==============================
+# ENSURE PORT
+# ==============================
 PORT="${PORT:-10000}"
 export PORT
 
 echo "🌐 Binding to PORT=${PORT}"
 
-# ===============================
-# TEST DATABASE CONNECTION
-# ===============================
-echo "🔎 Testing database connection..."
-
-python - <<EOF
-import os
-from sqlalchemy import create_engine
-
-url = os.getenv("DATABASE_URL")
-engine = create_engine(url)
-
-try:
-    conn = engine.connect()
-    conn.close()
-    print("✅ Database connection successful")
-except Exception as e:
-    print("❌ Database connection failed:", e)
-    raise
-EOF
-
-# ===============================
+# ==============================
 # START FASTAPI
-# ===============================
-echo "🔥 Starting Uvicorn..."
-
+# ==============================
 exec uvicorn main:app \
   --host 0.0.0.0 \
   --port "$PORT" \
