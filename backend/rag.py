@@ -212,3 +212,7 @@ class RAGManager:
             def error_generator():
                 yield f"I'm sorry, I encountered an error while processing your request: {error_msg}"
             return error_generator()
+
+
+
+
