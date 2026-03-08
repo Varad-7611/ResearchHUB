@@ -1,21 +1,23 @@
 # ResearchHUB AI 🚀
 
-A production-ready **Agentic AI-powered research assistant** that helps users search, analyze, and interact with research papers intelligently.
+A production-ready **Agentic AI-powered research assistant** that helps users **upload, analyze, search, and interact with research papers intelligently**.
 
 ResearchHUB AI allows users to:
 
 - Upload research papers
-- Ask questions from documents
+- Analyze research documents automatically
+- Ask questions about uploaded documents
 - Perform intelligent web searches
 - Chat with an AI research assistant
 
-The system uses **Retrieval-Augmented Generation (RAG)** with vector embeddings to generate accurate and contextual responses.
+The system uses **Retrieval-Augmented Generation (RAG)** with vector embeddings to generate accurate, contextual, and research-focused responses.
 
 ---
 
 # ✨ Features
 
 ## 🔐 Authentication
+
 - Secure **JWT-based authentication**
 - **OTP email verification**
 - Password hashing using **bcrypt**
@@ -23,7 +25,7 @@ The system uses **Retrieval-Augmented Generation (RAG)** with vector embeddings 
 
 ---
 
-## 📄 Research Paper Upload
+# 📄 Research Paper Upload
 
 Users can upload research papers in the following formats:
 
@@ -39,20 +41,52 @@ When a document is uploaded:
 4. Stored in a **FAISS vector database**.
 5. Used for **RAG-based retrieval**.
 
-This allows the AI to answer questions directly from the uploaded document.
+This allows the AI to answer questions directly from the uploaded research paper.
 
 ---
 
-## 🤖 AI Research Chat
+# 🔬 Research Paper Analysis
+
+ResearchHUB AI can **analyze research papers automatically**.
+
+After uploading a document, the AI can:
+
+- Understand the **research problem**
+- Extract **key concepts**
+- Identify **methods and techniques used**
+- Summarize the **results and conclusions**
+- Answer **complex questions about the paper**
+
+The system retrieves the most relevant sections of the paper and uses **LLM reasoning** to generate accurate answers.
+
+Example questions you can ask:
+
+```
+I uploaded a research document transformer_research.pdf + What problem does this paper solve?
+```
+
+```
+I uploaded a research document transformer_research.pdf + Explain the proposed methodology.
+```
+
+```
+I uploaded a research document transformer_research.pdf + What are the key results of the paper?
+```
+
+---
+
+# 🤖 AI Research Chat
 
 - ChatGPT-style conversational interface
 - Streaming AI responses
 - Context-aware answers
 - Powered by **Llama-3.3-70B via Groq API**
 
+The assistant helps researchers understand papers quickly.
+
 ---
 
-## 🔎 Web Search Capability
+# 🔎 Web Search Capability
 
 Users can instruct the AI to perform a web search.
 
@@ -68,11 +102,11 @@ Search on web and give me: <Your Question>
 Search on web and give me: Latest advancements in quantum computing
 ```
 
-The AI retrieves relevant web information and summarizes it for the user.
+The AI retrieves and summarizes relevant information from the web.
 
 ---
 
-## 📚 Ask Questions from Uploaded Documents
+# 📚 Ask Questions from Uploaded Documents
 
 Users can ask questions directly from uploaded research papers.
 
@@ -85,14 +119,14 @@ I uploaded a research document <document_name> + <your question>
 ### Example
 
 ```
-I uploaded a research document transformer_research.pdf + What problem does this paper solve?
+I uploaded a research document attention_is_all_you_need.pdf + What is the main contribution of this paper?
 ```
 
 The system will:
 
-1. Retrieve relevant document chunks
+1. Retrieve relevant document sections
 2. Send them to the LLM
-3. Generate a contextual answer.
+3. Generate a contextual answer
 
 ---
 
@@ -239,7 +273,7 @@ research-hub/
 
 # 🚀 Getting Started
 
-## 1. Clone Repository
+## Clone Repository
 
 ```bash
 git clone https://github.com/yourusername/research-hub.git
@@ -267,25 +301,25 @@ Activate environment
 
 Linux / Mac
 
-```bash
+```
 source venv/bin/activate
 ```
 
 Windows
 
-```bash
+```
 venv\Scripts\activate
 ```
 
 Install dependencies
 
-```bash
+```
 pip install -r requirements.txt
 ```
 
-Run the backend server
+Run backend server
 
-```bash
+```
 uvicorn main:app --reload
 ```
 
@@ -301,19 +335,19 @@ http://localhost:8000
 
 Navigate to frontend folder
 
-```bash
+```
 cd frontend
 ```
 
 Install dependencies
 
-```bash
+```
 npm install
 ```
 
 Run development server
 
-```bash
+```
 npm run dev
 ```
 
@@ -343,7 +377,7 @@ EMAIL_PASSWORD=your_email_password
 
 # ☁ Deployment
 
-The application is hosted on **AWS Cloud**.
+The application is deployed on **AWS Cloud**.
 
 Production stack includes:
 
