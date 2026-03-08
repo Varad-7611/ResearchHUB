@@ -209,33 +209,60 @@ Built for performance and scalability using modern technologies.
 
 ---
 
+# 📸 Screenshots
+
+## 🏠 Landing Page
+
+<img width="1817" height="927" alt="image" src="https://github.com/user-attachments/assets/48a52dfa-37ee-4ac8-9b18-14c020fb6a41" />
+
+---
+
+## 🔐 Authentication (Login / Signup)
+
+<img width="1816" height="866" alt="image" src="https://github.com/user-attachments/assets/0ab8d625-0aa0-473d-955c-ec7c8d420760" />
+
+<img width="1667" height="875" alt="image" src="https://github.com/user-attachments/assets/95f0d7aa-ce22-4292-a49e-6d266c930614" />
+
+<img width="1793" height="873" alt="image" src="https://github.com/user-attachments/assets/46c5eda0-19aa-481c-8ac2-b97294c18897" />
+
+
+---
+## Dashboard 
+
+<img width="1910" height="926" alt="image" src="https://github.com/user-attachments/assets/2be0d5cf-e542-474f-b098-6e9f2cf60502" />
+
+
+---
+## 💬 AI Research Chat Interface
+
+<img width="1879" height="903" alt="image" src="https://github.com/user-attachments/assets/1f822602-1616-44a7-aefc-8ec709bdfff8" />
+
+---
+
+## 📄 Research Paper Upload
+
+<img width="1883" height="883" alt="image" src="https://github.com/user-attachments/assets/f8426fc8-65ce-4433-a220-c52755bb6f6e" />
+
+
+---
+
+## 🔬 Research Paper Analysis
+
+<img width="1904" height="902" alt="image" src="https://github.com/user-attachments/assets/112b6402-94d5-4d6a-80e3-d7cf22e7c718" />
+
+
+---
+
+## 🔎 Web Search Feature
+
+<img width="1880" height="920" alt="image" src="https://github.com/user-attachments/assets/77c1ced3-3a45-466c-aa39-ab73a7701576" />
+
+
+---
+
 # 🧠 System Architecture
 
-```
-User
- │
- ▼
-React Frontend
- │
- ▼
-FastAPI Backend
- │
- ├── Authentication (JWT)
- │
- ├── Document Processing
- │     ├── PDF Parsing
- │     ├── Text Chunking
- │     ├── Embedding Generation
- │     └── FAISS Vector Store
- │
- ├── Agentic AI Decision Layer
- │     ├── Document RAG
- │     ├── Web Search
- │     └── Direct LLM Response
- │
- ▼
-Groq API (Llama-3.3-70B)
-```
+<img width="1536" height="1024" alt="ChatGPT Image Mar 8, 2026, 10_36_09 AM" src="https://github.com/user-attachments/assets/2ed18be0-d338-4852-9768-fe28e320036a" />
 
 ---
 
@@ -408,6 +435,9 @@ Production stack includes:
 - Research paper recommendation system
 - Knowledge graph generation
 - Multi-agent research workflows
+
+---
+# 
 
 ---
 
